@@ -43,9 +43,10 @@ export async function GET(request: NextRequest) {
   const state = '1234';
 
   try {
-    
+    console.log("***TRY BEGINS");
+    console.log("***FHIR Base URL:", fhirBaseUrl); // Debug log to check the FHIR base URL
     const tokenEndpoint = await getTokenEndpoint(fhirBaseUrl as string); // Ensure fhirBaseUrl is treated as a string
-
+console.log("***Token Endpoint:", tokenEndpoint); // Debug log to check the token endpoint
     const tokenResponse = await axios.post(
       tokenEndpoint,
       qs.stringify({
@@ -61,7 +62,7 @@ export async function GET(request: NextRequest) {
         },
       }
     );
-
+console.log("***Token Response Data:", tokenResponse.data); // Debug log to check the response data
     const { access_token, patient } = tokenResponse.data;
 
     return NextResponse.redirect(

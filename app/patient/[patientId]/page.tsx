@@ -38,11 +38,16 @@ function PatientPageContent() {
   const [observations, setObservations] = useState<ObservationEntry[]>([]);
   const { authorizeUrl } = useOAuth(); // Use the context to get only the authorizeUrl
 
+  // State for AI summary
+  const [summary, setSummary] = useState<string>('');
+  const [isSummaryLoading, setIsSummaryLoading] = useState<boolean>(false);
+  const [summaryError, setSummaryError] = useState<string>('');
+
   useEffect(() => {
     const initiateAuthorization = () => {
       if (authorizeUrl) {
         const clientId = process.env.NEXT_PUBLIC_CLIENT_ID;
-        const redirectUri = window.location.origin + '/callback';
+        const redirectUri = window.location.origin + '/api/auth/callback';
         const authUrl = `${authorizeUrl}?response_type=code&client_id=${clientId}&redirect_uri=${redirectUri}`;
 
         window.location.href = authUrl;
@@ -86,6 +91,25 @@ function PatientPageContent() {
       fetchObservations();
     }
   }, [patientId, accessToken]);
+
+  useEffect(() => {
+    if (observations.length > 0) {
+      const generateSummary = async () => {
+        setIsSummaryLoading(true);
+        setSummaryError('');
+        try {
+          const response = await axios.post('/api/generate-summary', { observations });
+          setSummary(response.data.summary);
+        } catch (error) {
+          console.error('Error generating summary:', error);
+          setSummaryError('Failed to generate summary.');
+        } finally {
+          setIsSummaryLoading(false);
+        }
+      };
+      generateSummary();
+    }
+  }, [observations]);
 
   if (!patientData) return <div>Loading...</div>;
 
@@ -146,6 +170,18 @@ function PatientPageContent() {
         </table>
       ) : (
         <p>No observations found for this patient.</p>
+      )}
+
+      {/* AI Summary Section */}
+      <div className="header">
+        <h1>AI Health Summary</h1>
+      </div>
+      {isSummaryLoading && <p>Generating summary...</p>}
+      {summaryError && <p style={{ color: 'red' }}>{summaryError}</p>}
+      {summary && !isSummaryLoading && (
+        <div className="ai-summary">
+          <p>{summary.split('\n').map((line, index) => <span key={index}>{line}<br/></span>)}</p>
+        </div>
       )}
     </div>
   );

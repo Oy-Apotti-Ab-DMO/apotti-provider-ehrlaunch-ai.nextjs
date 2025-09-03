@@ -56,4 +56,17 @@ body {
     text-align: center;
     color: black; /* Ensuring observation data text is black */
   }
-  
+
+/* AI Summary Section */
+.ai-summary {
+  background-color: #f9f9f9;
+  border: 1px solid #ddd;
+  border-radius: 8px;
+  padding: 16px;
+  margin-top: 20px;
+}
+
+.ai-summary p {
+  white-space: pre-wrap; /* This will respect newlines and spaces from the AI response */
+  color: black;
+}
