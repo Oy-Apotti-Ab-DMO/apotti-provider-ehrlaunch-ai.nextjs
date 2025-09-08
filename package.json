@@ -1,5 +1,5 @@
 {
-  "name": "apotti-provider-ehrlaunch-nextjs",
+  "name": "apotti-provider-ehrlaunch-ai.nextjs",
   "version": "0.1.0",
   "private": true,
   "scripts": {
@@ -15,7 +15,9 @@
     "qs": "^6.13.0",
     "react": "^18",
     "react-dom": "^18",
-    "react-json-to-table": "^0.1.7"
+    "react-json-to-table": "^0.1.7",
+    "react-markdown": "^10.1.0",
+    "remark-gfm": "^4.0.1"
   },
   "devDependencies": {
     "@types/node": "^20",

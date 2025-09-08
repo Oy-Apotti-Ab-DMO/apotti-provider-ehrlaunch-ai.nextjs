@@ -57,8 +57,8 @@ This application is built to provide healthcare providers with a secure, efficie
 1. **Clone the Repository**
 
    ```bash
-   git clone https://github.com/your-username/apotti-provider-ehrlaunch-nextjs.git
-   cd apotti-provider-ehrlaunch-nextjs
+   git clone https://github.com/your-username/apotti-provider-ehrlaunch-ai.nextjs.git
+   cd apotti-provider-ehrlaunch-ai.nextjs
 
 2. **Install Dependencies**
 npm install
@@ -89,7 +89,7 @@ Redeployment: Ensure redeployment or restart of the Azure service for environmen
 
 ## File Structure
 ```plaintext
-apotti-provider-ehrlaunch-nextjs/
+apotti-provider-ehrlaunch-ai.nextjs/
 ├── app/
 │   ├── api/
 │   │   ├── auth/

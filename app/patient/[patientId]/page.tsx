@@ -6,6 +6,8 @@ import { useEffect, useState, Suspense } from "react";
 import axios from "axios";
 import { useOAuth } from "../../context/OAuthContext"; // Import the custom hook
 import '../../styles/PatientPage.css';
+import ReactMarkdown from 'react-markdown';
+import remarkGfm from 'remark-gfm';
 
 interface Patient {
   id: string;
@@ -35,13 +37,12 @@ function PatientPageContent() {
   const accessToken = searchParams.get('accessToken');
 
   const [patientData, setPatientData] = useState<Patient | null>(null);
-  const [observations, setObservations] = useState<ObservationEntry[]>([]);
   const { authorizeUrl } = useOAuth(); // Use the context to get only the authorizeUrl
 
-  // State for AI summary
-  const [summary, setSummary] = useState<string>('');
-  const [isSummaryLoading, setIsSummaryLoading] = useState<boolean>(false);
-  const [summaryError, setSummaryError] = useState<string>('');
+  // State for the new comprehensive summary
+  const [summaryBundle, setSummaryBundle] = useState<any>(null);
+  const [isBundleLoading, setIsBundleLoading] = useState<boolean>(false);
+  const [bundleError, setBundleError] = useState<string>('');
 
   useEffect(() => {
     const initiateAuthorization = () => {
@@ -74,42 +75,28 @@ function PatientPageContent() {
         }
       };
 
-      const fetchObservations = async () => {
+      const fetchComprehensiveSummary = async () => {
+        setIsBundleLoading(true);
+        setBundleError('');
         try {
-          const response = await axios.get(`/api/patient/${patientId}/observations?category=vital-signs`, {
+          const response = await axios.get(`/api/generate-comprehensive-summary?patientId=${patientId}`, {
             headers: {
               Authorization: `Bearer ${accessToken}`,
             },
           });
-          setObservations(response.data.entry || []);
+          setSummaryBundle(response.data);
         } catch (error) {
-          console.error('Error fetching observations:', error);
+          console.error('Error fetching comprehensive summary:', error);
+          setBundleError('Failed to fetch comprehensive summary.');
+        } finally {
+          setIsBundleLoading(false);
         }
       };
 
       fetchPatientData();
-      fetchObservations();
+      fetchComprehensiveSummary();
     }
   }, [patientId, accessToken]);
-
-  useEffect(() => {
-    if (observations.length > 0) {
-      const generateSummary = async () => {
-        setIsSummaryLoading(true);
-        setSummaryError('');
-        try {
-          const response = await axios.post('/api/generate-summary', { observations });
-          setSummary(response.data.summary);
-        } catch (error) {
-          console.error('Error generating summary:', error);
-          setSummaryError('Failed to generate summary.');
-        } finally {
-          setIsSummaryLoading(false);
-        }
-      };
-      generateSummary();
-    }
-  }, [observations]);
 
   if (!patientData) return <div>Loading...</div>;
 
@@ -142,50 +129,24 @@ function PatientPageContent() {
           </table>
         </div>
       )}
-      <div className="header">
-        <h1>Observations</h1>
-      </div>
-      {observations.length > 0 ? (
-        <table className="observations-table">
-          <thead>
-            <tr>
-              <th>Category</th>
-              <th>Code</th>
-              <th>Value</th>
-              <th>Unit</th>
-              <th>DateTime</th>
-            </tr>
-          </thead>
-          <tbody>
-            {observations.map((entry, index) => (
-              <tr key={index}>
-                <td>{entry.resource.category?.[0]?.coding?.[0]?.display || 'vital-signs'}</td>
-                <td>{entry.resource.code?.text || 'N/A'}</td>
-                <td>{entry.resource.valueQuantity?.value || 'N/A'}</td>
-                <td>{entry.resource.valueQuantity?.unit || 'N/A'}</td>
-                <td>{entry.resource.effectiveDateTime ? new Date(entry.resource.effectiveDateTime).toLocaleString() : 'N/A'}</td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
-      ) : (
-        <p>No observations found for this patient.</p>
-      )}
 
-      {/* AI Summary Section */}
+      {/* Section for the new comprehensive summary bundle */}
       <div className="header">
-        <h1>AI Health Summary</h1>
+        <h1>AI-Generated Summary</h1>
       </div>
-      {isSummaryLoading && <p>Generating summary...</p>}
-      {summaryError && <p style={{ color: 'red' }}>{summaryError}</p>}
-      {summary && !isSummaryLoading && (
+      {isBundleLoading && <p>Loading comprehensive data...</p>}
+      {bundleError && <p style={{ color: 'red' }}>{bundleError}</p>}
+      {summaryBundle && !isBundleLoading && (
         <div className="ai-summary">
-          <p>{summary.split('\n').map((line, index) => <span key={index}>{line}<br/></span>)}</p>
+          <ReactMarkdown remarkPlugins={[remarkGfm]}>
+            {summaryBundle.summary.replace(/```json[\s\S]*?```/, '')}
+          </ReactMarkdown>
         </div>
       )}
     </div>
   );
 }
+
 
 
 export default function PatientPage() {
