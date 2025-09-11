@@ -27,4 +27,3 @@ export async function GET(request: NextRequest, { params }: { params: { patientI
     return NextResponse.json({ error: 'Error fetching observations' }, { status: 500 });
   }
 }
-
