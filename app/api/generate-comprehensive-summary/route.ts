@@ -100,8 +100,12 @@ Produce TWO parts in order:
 `;
 
 export async function GET(request: NextRequest) {
+  console.log('--- generate-comprehensive-summary route handler started ---');
   const patientId = request.nextUrl.searchParams.get('patientId');
   const accessToken = request.headers.get('Authorization')?.split(' ')[1];
+
+  console.log(`Patient ID: ${patientId}`);
+  console.log(`Access Token present: ${!!accessToken}`);
 
   if (!patientId || !accessToken) {
     return NextResponse.json({ error: 'Missing patient ID or access token' }, { status: 400 });
@@ -109,7 +113,9 @@ export async function GET(request: NextRequest) {
 
   try {
     // Step 1: Fetch the comprehensive FHIR bundle
+    console.log('Fetching FHIR data...');
     const bundle = await patientEverything(patientId, accessToken);
+    console.log(`FHIR bundle fetched. Number of entries: ${bundle.entry?.length || 0}`);
 
     // Step 2: Prepare the prompt for the generative model
     const today = new Date().toISOString().split('T')[0];
@@ -147,9 +153,11 @@ export async function GET(request: NextRequest) {
     `;
 
     // Step 3: Call the generative model
+    console.log('Calling generative model...');
     const result = await model.generateContent(prompt);
     const response = result.response;
     const summaryText = response.text();
+    console.log('Generative model call successful.');
 
     // Step 4: Return the generated summary
     return NextResponse.json({ summary: summaryText });
