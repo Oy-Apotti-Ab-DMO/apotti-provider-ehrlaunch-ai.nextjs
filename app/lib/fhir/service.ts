@@ -1,5 +1,18 @@
 import axios from 'axios';
 
+interface Resource {
+  [key: string]: unknown;
+  resourceType: string;
+}
+
+interface Bundle {
+  resourceType: 'Bundle';
+  type: string;
+  entry: {
+    resource: Resource;
+  }[];
+}
+
 const fhirServerUrl = process.env.NEXT_PUBLIC_FHIR_SERVER;
 
 /**
@@ -74,7 +87,7 @@ export async function fhirRead(resourceType: string, id: string, accessToken: st
  * @param accessToken The OAuth2 access token.
  * @returns A combined FHIR Bundle containing all the fetched resources.
  */
-export async function patientEverything(patientId: string, accessToken: string) {
+export async function patientEverything(patientId: string, accessToken: string): Promise<Bundle> {
   const resourceTypes = [
     "AllergyIntolerance", "CarePlan", "CareTeam", "Condition", "DiagnosticReport",
     "Encounter", "Goal", "Immunization", "MedicationDispense", "MedicationRequest",
@@ -87,7 +100,7 @@ export async function patientEverything(patientId: string, accessToken: string) 
 
   const results = await Promise.allSettled(promises);
 
-  const combinedBundle: any = {
+  const combinedBundle: Bundle = {
     resourceType: 'Bundle',
     type: 'collection',
     entry: [],

@@ -16,19 +16,8 @@ interface Patient {
   address?: { text: string }[];
 }
 
-interface ObservationEntry {
-  resource: {
-    code?: { text: string };
-    category?: Array<{
-      coding: Array<{
-        system: string;
-        code: string;
-        display: string;
-      }>;
-    }>;
-    valueQuantity?: { value: number; unit: string };
-    effectiveDateTime?: string;
-  };
+interface SummaryResponse {
+  summary: string;
 }
 
 function PatientPageContent() {
@@ -40,7 +29,7 @@ function PatientPageContent() {
   const { authorizeUrl } = useOAuth(); // Use the context to get only the authorizeUrl
 
   // State for the new comprehensive summary
-  const [summaryBundle, setSummaryBundle] = useState<any>(null);
+  const [summaryBundle, setSummaryBundle] = useState<SummaryResponse | null>(null);
   const [isBundleLoading, setIsBundleLoading] = useState<boolean>(false);
   const [bundleError, setBundleError] = useState<string>('');
 
